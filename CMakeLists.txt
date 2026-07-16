@@ -31,6 +31,14 @@ target_link_libraries(battery-monitor
 # Compiler flags
 target_compile_options(battery-monitor PRIVATE -Wall -Wextra -Wpedantic)
 
+# Tests
+enable_testing()
+add_executable(battery_reader_test tests/battery_reader_test.cpp src/battery_reader.cpp)
+target_include_directories(battery_reader_test PRIVATE src)
+target_compile_options(battery_reader_test PRIVATE -Wall -Wextra -Wpedantic)
+add_test(NAME battery_reader_test COMMAND battery_reader_test)
+
 # Installation
-install(TARGETS battery-monitor DESTINATION bin)
-install(FILES systemd/battery-monitor.service DESTINATION ~/.config/systemd/user/)
+include(GNUInstallDirs)
+install(TARGETS battery-monitor DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES systemd/battery-monitor.service DESTINATION ${CMAKE_INSTALL_DATADIR}/systemd/user/)
