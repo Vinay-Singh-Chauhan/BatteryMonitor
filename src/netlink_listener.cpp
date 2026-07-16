@@ -5,6 +5,10 @@
 #include <sys/socket.h>
 #include <linux/netlink.h>
 #include <cerrno>
+#include <poll.h>
+#include <csignal>
+
+extern volatile sig_atomic_t g_shutdown_requested;
 
 NetlinkListener::NetlinkListener()
     : socket_fd(-1), running(false) {}
@@ -25,13 +29,38 @@ void NetlinkListener::start(EventCallback callback) {
     
     running = true;
     char buffer[4096];
+    struct pollfd pfd{};
+    pfd.fd = socket_fd;
+    pfd.events = POLLIN;
     
-    while (running) {
-        int len = recvfrom(socket_fd, buffer, sizeof(buffer) - 1, 0, nullptr, nullptr);
-        
+    while (running.load()) {
+        if (g_shutdown_requested != 0) {
+            break;
+        }
+
+        const int poll_result = poll(&pfd, 1, 1000);
+        if (poll_result < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            std::cerr << "Error polling Netlink socket: " << strerror(errno) << std::endl;
+            break;
+        }
+
+        if (poll_result == 0) {
+            continue;
+        }
+
+        if ((pfd.revents & POLLIN) == 0) {
+            continue;
+        }
+
+        const int len = recvfrom(socket_fd, buffer, sizeof(buffer) - 1, 0, nullptr, nullptr);
         if (len < 0) {
-            if (running) {
-                std::cerr << "Error receiving from Netlink socket: " << strerror(errno) << std::endl;
+            if (running.load()) {
+                if (errno != EINTR) {
+                    std::cerr << "Error receiving from Netlink socket: " << strerror(errno) << std::endl;
+                }
             }
             break;
         }

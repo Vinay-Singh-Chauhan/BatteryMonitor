@@ -2,6 +2,7 @@
 #define NETLINK_LISTENER_H
 
 #include <functional>
+#include <atomic>
 
 /**
  * Listens for kernel Netlink events (KOBJ_CHANGE) from power_supply subsystem
@@ -27,7 +28,7 @@ public:
 
 private:
     int socket_fd;
-    volatile bool running;
+    std::atomic<bool> running;
     
     /**
      * Create and bind Netlink socket for KOBJ_CHANGE events
