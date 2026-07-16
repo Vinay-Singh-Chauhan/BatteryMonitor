@@ -1,0 +1,19 @@
+[Unit]
+Description=Battery Monitor Daemon
+Documentation=https://github.com/your-username/BatteryMonitor
+After=dbus.service
+BindsTo=dbus.service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/battery-monitor
+Restart=on-failure
+RestartSec=5
+
+# Run in the background
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=battery-monitor
+
+[Install]
+WantedBy=default.target
