@@ -2,6 +2,11 @@
 #include <iostream>
 #include <iomanip>
 
+namespace {
+constexpr int kLowBatteryThreshold = 10;
+constexpr int kHighBatteryThreshold = 90;
+}
+
 BatteryMonitor::BatteryMonitor()
     : battery_reader(std::make_unique<BatteryReader>()),
       netlink_listener(std::make_unique<NetlinkListener>()),
@@ -60,8 +65,8 @@ void BatteryMonitor::on_battery_event() {
 }
 
 void BatteryMonitor::check_thresholds(const BatteryInfo& info) {
-    // Low battery threshold (10%)
-    if (info.capacity <= 10 && info.status == "Discharging") {
+    // Low battery threshold
+    if (info.capacity <= kLowBatteryThreshold && info.status == "Discharging") {
         if (!low_notified) {
             std::cout << "Low battery notification triggered" << std::endl;
             notifier->notify("Battery Low", 
@@ -70,13 +75,13 @@ void BatteryMonitor::check_thresholds(const BatteryInfo& info) {
             low_notified = true;
             high_notified = false;  // Reset high notification flag
         }
-    } else if (info.capacity > 10) {
-        // Reset low notification flag when we go above 10%
+    } else if (info.capacity > kLowBatteryThreshold) {
+        // Reset low notification flag when we go above the threshold
         low_notified = false;
     }
     
-    // High battery threshold (90%)
-    if (info.capacity >= 90 && info.status == "Charging") {
+    // High battery threshold
+    if (info.capacity >= kHighBatteryThreshold && info.status == "Charging") {
         if (!high_notified) {
             std::cout << "High battery notification triggered" << std::endl;
             notifier->notify("Battery Charged",
@@ -85,8 +90,8 @@ void BatteryMonitor::check_thresholds(const BatteryInfo& info) {
             high_notified = true;
             low_notified = false;  // Reset low notification flag
         }
-    } else if (info.capacity < 90) {
-        // Reset high notification flag when we go below 90%
+    } else if (info.capacity < kHighBatteryThreshold) {
+        // Reset high notification flag when we go below the threshold
         high_notified = false;
     }
 }
