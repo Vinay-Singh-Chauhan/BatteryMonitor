@@ -1,11 +1,14 @@
 #include "battery_monitor.h"
 #include <iostream>
 #include <iomanip>
+#include <csignal>
 
 namespace {
 constexpr int kLowBatteryThreshold = 10;
 constexpr int kHighBatteryThreshold = 90;
 }
+
+extern volatile sig_atomic_t g_shutdown_requested;
 
 BatteryMonitor::BatteryMonitor()
     : battery_reader(std::make_unique<BatteryReader>()),
@@ -44,6 +47,11 @@ void BatteryMonitor::run() {
     netlink_listener->start([this]() {
         this->on_battery_event();
     });
+
+    if (g_shutdown_requested != 0) {
+        std::cout << "Shutdown requested, stopping monitor..." << std::endl;
+        stop();
+    }
 }
 
 void BatteryMonitor::stop() {

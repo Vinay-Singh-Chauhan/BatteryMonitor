@@ -4,15 +4,17 @@
 #include <memory>
 
 std::unique_ptr<BatteryMonitor> g_monitor;
+volatile sig_atomic_t g_shutdown_requested = 0;
 
 void signal_handler(int signal) {
     std::cout << "\nReceived signal " << signal << ", shutting down..." << std::endl;
-    if (g_monitor) {
-        g_monitor->stop();
-    }
+    g_shutdown_requested = 1;
 }
 
 int main(int argc, char* argv[]) {
+    (void)argc;
+    (void)argv;
+
     std::cout << "Battery Monitor v1.0" << std::endl;
     
     g_monitor = std::make_unique<BatteryMonitor>();
@@ -29,5 +31,5 @@ int main(int argc, char* argv[]) {
     // Run the monitor (blocks)
     g_monitor->run();
     
-    return 0;
+    return g_shutdown_requested ? 0 : 1;
 }
