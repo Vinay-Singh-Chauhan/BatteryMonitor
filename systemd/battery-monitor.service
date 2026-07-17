@@ -1,6 +1,6 @@
 [Unit]
 Description=Battery Monitor Daemon
-Documentation=https://github.com/your-username/BatteryMonitor
+Documentation=https://github.com/Vinay-Singh-Chauhan/BatteryMonitor
 After=dbus.service
 BindsTo=dbus.service
 

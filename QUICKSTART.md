@@ -61,22 +61,12 @@ journalctl --user -u battery-monitor -f
 ## How It Works
 
 1. **Netlink Listener** subscribes to kernel power supply events
-2. **Battery Reader** reads from `/sys/class/power_supply/BAT0/`
+2. **Battery Reader** reads from `/sys/class/power_supply/BAT0/` or the BAT# supply that occurs first in lexicographical order
 3. **Threshold Logic** sends notifications when:
    - Battery ≤ 10% while discharging → "Battery Low" (critical)
    - Battery ≥ 90% while charging → "Battery Charged" (normal)
 4. **State flags** prevent duplicate notifications for the same threshold
 
-## Notification Demo
-
-To test notifications manually (while daemon is running):
-```bash
-# Simulate low battery
-echo "Battery event: capacity=8% (Discharging)"
-
-# Simulate charging complete
-echo "Battery event: capacity=92% (Charging)"
-```
 
 ## Troubleshooting
 
@@ -110,11 +100,8 @@ journalctl --user -u battery-monitor -n 50
 Edit thresholds in `src/battery_monitor.cpp`, function `check_thresholds()`:
 
 ```cpp
-// Change from 10% to 15%
-if (info.capacity <= 15 && info.status == "Discharging") {
-
-// Change from 90% to 85%
-if (info.capacity >= 85 && info.status == "Charging") {
+constexpr int kLowBatteryThreshold = 10;
+constexpr int kHighBatteryThreshold = 90;
 ```
 
 Then rebuild:

@@ -147,7 +147,7 @@ Currently, the thresholds are hardcoded:
 - Low battery: 10% while discharging
 - Charged: 90% while charging
 
-To customize, edit the `check_thresholds()` method in `src/battery_monitor.cpp`.
+To customize, edit the respective variables in `src/battery_monitor.cpp`.
 
 ## Troubleshooting
 
@@ -202,7 +202,7 @@ BatteryMonitor/
 
 ## License
 
-MIT License - feel free to use and modify
+This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Contributing
 
